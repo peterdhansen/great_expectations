@@ -28,6 +28,7 @@ from great_expectations.render.types import RenderedStringTemplateContent
 from great_expectations.render.util import num_to_str, substitute_none_for_missing
 from great_expectations.validator.validator import Validator
 
+
 # This method compares a string to a url validation regex using Django's URLValidator class
 def fits_regex(x):
     regex = re.compile(
@@ -93,6 +94,13 @@ class ExpectColumnValuesToBeValidUrls(ColumnMapExpectation):
                     "http://www.stackoverflow.com",
                     "http://www.google.com",
                 ],
+                "no_valid_urls": [
+                    "apples",
+                    "oranges",
+                    "grapes",
+                    "carrots",
+                    "olives",
+                ],
             },
             "tests": [
                 {
@@ -117,6 +125,23 @@ class ExpectColumnValuesToBeValidUrls(ColumnMapExpectation):
                         "unexpected_list": [],
                     },
                 },
+                {
+                    "title": "no_valid_urls",
+                    "exact_match_out": False,
+                    "include_in_gallery": True,
+                    "in": {"column": "no_valid_urls", "mostly": 1},
+                    "out": {
+                        "success": False,
+                        "unexpected_index_list": [0, 1, 2, 3, 4],
+                        "unexpected_list": [
+                            "apples",
+                            "oranges",
+                            "grapes",
+                            "carrots",
+                            "olives",
+                        ],
+                    },
+                },
             ],
         }
     ]
@@ -124,12 +149,9 @@ class ExpectColumnValuesToBeValidUrls(ColumnMapExpectation):
     # This dictionary contains metadata for display in the public gallery
     library_metadata = {
         "maturity": "experimental",
-        "hackathon"  # "experimental", "beta", or "production"
-        "tags": [  # Tags for this Expectation in the gallery
-            #         "experimental"
-        ],
+        "tags": ["experimental", "hackathon"],
         "contributors": [  # Github handles for all contributors to this Expectation
-            "ckathleen"
+            "@ckathleen"
         ],
         "package": "experimental_expectations",
     }
