@@ -969,9 +969,9 @@ def _build_sa_validator_with_data(
     # Here we instantiate a SqlAlchemyBatchData with a query, which causes a temp_table to be created.
     if sa_engine_name == "mysql":
         query = "SELECT * FROM " + table_name
-        batch_data = SqlAlchemyBatchData(engine=engine, query=query)
+        batch_data = SqlAlchemyBatchData(execution_engine=engine, query=query)
     else:
-        batch_data = SqlAlchemyBatchData(engine=engine, table_name=table_name)
+        batch_data = SqlAlchemyBatchData(execution_engine=engine, table_name=table_name)
 
     batch = Batch(data=batch_data)
     execution_engine = SqlAlchemyExecutionEngine(caching=caching, engine=engine)

@@ -15,6 +15,7 @@ from great_expectations.validator.validation_graph import MetricConfiguration
 logger = logging.getLogger(__name__)
 yaml = YAML()
 yaml.default_flow_style = False
+import pandas as pd
 
 
 class NoOpDict:
@@ -35,6 +36,10 @@ class BatchData:
     @property
     def execution_engine(self):
         return self._execution_engine
+
+    def head(self, *args, **kwargs):
+        # CONFLICT ON PURPOSE. REMOVE.
+        return pd.DataFrame({})
 
 
 class ExecutionEngine(ABC):
@@ -129,6 +134,10 @@ class ExecutionEngine(ABC):
     @property
     def config(self) -> dict:
         return self._config
+
+    @property
+    def dialect(self):
+        return None
 
     def get_batch_data(
         self,

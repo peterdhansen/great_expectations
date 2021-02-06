@@ -126,7 +126,7 @@ Notes:
         batch_data: PandasBatchData
         if isinstance(batch_spec, RuntimeDataBatchSpec):
             # batch_data != None is already checked when RuntimeDataBatchSpec is instantiated
-            df = batch_spec.batch_data
+            df = batch_spec.batch_data.datframe
             batch_spec.batch_data = "PandasDataFrame"
         elif isinstance(batch_spec, S3BatchSpec):
             if self._s3 is None:
@@ -158,7 +158,7 @@ Notes:
             reader_options: dict = batch_spec.reader_options
             path: str = batch_spec.path
             reader_fn: Callable = self._get_reader_fn(reader_method, path)
-            batch_data = reader_fn(path, **reader_options)
+            df = reader_fn(path, **reader_options)
         else:
             raise BatchSpecError(
                 f"batch_spec must be of type RuntimeDataBatchSpec, PathBatchSpec, or S3BatchSpec, not {batch_spec.__class__.__name__}"
