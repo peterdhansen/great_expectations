@@ -33,6 +33,7 @@ from great_expectations.exceptions import (
 )
 from great_expectations.exceptions.metric_exceptions import MetricResolutionError
 from great_expectations.execution_engine.pandas_batch_data import PandasBatchData
+
 from great_expectations.expectations.registry import (
     get_expectation_impl,
     get_metric_kwargs,
@@ -279,6 +280,47 @@ class Validator:
         return [
             expectation for expectation in keys if expectation.startswith("expect_")
         ]
+
+    def get_metrics(self, metrics: Dict[str, MetricConfiguration]) -> Dict[str, Any]:
+        """Return a dictionary with the requested metrics"""
+        graph = ValidationGraph()
+        resolved_metrics = {}
+        for metric_name, metric_configuration in metrics.items():
+            provider_cls, _ = get_metric_provider(
+                metric_configuration.metric_name, self.execution_engine
+            )
+            for key in provider_cls.domain_keys:
+                if (
+                    key not in metric_configuration.metric_domain_kwargs
+                    and key in provider_cls.default_kwarg_values
+                ):
+                    metric_configuration.metric_domain_kwargs[
+                        key
+                    ] = provider_cls.default_kwarg_values[key]
+            for key in provider_cls.value_keys:
+                if (
+                    key not in metric_configuration.metric_value_kwargs
+                    and key in provider_cls.default_kwarg_values
+                ):
+                    metric_configuration.metric_value_kwargs[
+                        key
+                    ] = provider_cls.default_kwarg_values[key]
+            self.build_metric_dependency_graph(
+                graph,
+                child_node=metric_configuration,
+                configuration=None,
+                execution_engine=self._execution_engine,
+                runtime_configuration=None,
+            )
+        self.resolve_validation_graph(graph, resolved_metrics)
+        return {
+            metric_name: resolved_metrics[metric_configuration.id]
+            for (metric_name, metric_configuration) in metrics.items()
+        }
+
+    def get_metric(self, metric: MetricConfiguration) -> Any:
+        """return the value of the requested metric."""
+        return self.get_metrics({"_": metric})["_"]
 
     def build_metric_dependency_graph(
         self,
@@ -527,7 +569,9 @@ class Validator:
         )
 
     def _initialize_expectations(
-        self, expectation_suite=None, expectation_suite_name=None
+        self,
+        expectation_suite: ExpectationSuite = None,
+        expectation_suite_name: str = None,
     ):
         """Instantiates `_expectation_suite` as empty by default or with a specified expectation `config`.
         In addition, this always sets the `default_expectation_args` to:
@@ -551,6 +595,14 @@ class Validator:
         Returns:
             None
         """
+        # Checking type of expectation_suite.
+        # Check for expectation_suite_name is already done by ExpectationSuiteIdentifier
+        if expectation_suite and not isinstance(expectation_suite, ExpectationSuite):
+            raise TypeError(
+                "expectation_suite must be of type ExpectationSuite, not {}".format(
+                    type(expectation_suite)
+                )
+            )
         if expectation_suite is not None:
             if isinstance(expectation_suite, dict):
                 expectation_suite = expectationSuiteSchema.load(expectation_suite)
