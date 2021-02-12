@@ -328,7 +328,7 @@ class DataConnector:
         )
 
         df = batch_data.head(n=5)
-        n_rows = batch_data.row_count()
+        n_rows = len(df)
 
         if pretty_print and df is not None:
             print(f"\n\t\tShowing 5 rows")

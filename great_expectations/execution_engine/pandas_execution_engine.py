@@ -126,7 +126,14 @@ Notes:
         batch_data: PandasBatchData
         if isinstance(batch_spec, RuntimeDataBatchSpec):
             # batch_data != None is already checked when RuntimeDataBatchSpec is instantiated
-            df = batch_spec.batch_data.datframe
+            if isinstance(batch_spec.batch_data, pd.DataFrame):
+                df = batch_spec.batch_data
+            elif isinstance(batch_spec.batch_data, PandasBatchData):
+                df = batch_spec.batch_data.dataframe
+            else:
+                raise ValueError(
+                    "RuntimeDataBatchSpec must provide a Pandas DataFrame or PandasBatchData object."
+                )
             batch_spec.batch_data = "PandasDataFrame"
         elif isinstance(batch_spec, S3BatchSpec):
             if self._s3 is None:

@@ -32,6 +32,7 @@ from great_expectations.exceptions import (
     InvalidExpectationConfigurationError,
 )
 from great_expectations.execution_engine import ExecutionEngine
+from great_expectations.execution_engine.pandas_batch_data import PandasBatchData
 from great_expectations.expectations.registry import (
     get_expectation_impl,
     get_metric_provider,
